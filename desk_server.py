@@ -1,4 +1,4 @@
-#brücke: shark-8-seite, fensterbild, cursor cli acp
+#brücke: android-handy, fensterbild, cursor cli acp
 import argparse
 import copy
 import ctypes

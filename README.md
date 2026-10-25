@@ -1,6 +1,8 @@
 # handy cursor
 
-Brücke vom Shark 8 zum Cursor-Agent auf diesem Windows-PC. Im Chrome des Handys liegt eine dunkle Chat-Seite. Dazu wählst du ein Desktop-Fenster, dessen Bild live auf dem Handy erscheint.
+Android-Handy als Alternative zur iOS-Version von Cursor. Nur für meine Bedürfnisse gemacht.
+
+Brücke vom Android-Handy zum Cursor-Agent auf diesem Windows-PC. Im Chrome des Handys liegt eine dunkle Chat-Seite. Dazu wählst du ein Desktop-Fenster, dessen Bild live auf dem Handy erscheint.
 
 Was du auf dem Handy schreibst, wird in das gewählte Fenster auf dem PC getippt und dort gestartet. Das Bild dieses Fensters bleibt auf dem Handy.
 
@@ -49,7 +51,7 @@ Ohne Token antwortet die Seite mit Hinweis, die API mit einem Fehler.
 
 Der Server hört auf `0.0.0.0` Port `8765`, damit das Handy im eigenen Netz rankommt. Es wird kein Port ins öffentliche Internet freigegeben. Wer das Token nicht hat, kommt nicht an Chat oder Bild.
 
-## shark 8
+## android handy
 
 1. Auf dem Startbildschirm das Symbol **Cursor** antippen. Die Seite öffnet sich ohne Browser-Leiste.
 2. Unter der Leiste ein Fenster wählen. Das Bild läuft mit, solange das Fenster gewählt ist. Zwei Finger zoomen das Bild, ein Finger verschiebt es. Der Chat darunter zoomt nicht mit.
