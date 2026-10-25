@@ -1,4 +1,4 @@
-# handy cursor
+# cursor android bridge
 
 Android-Handy als Alternative zur iOS-Version von Cursor. Nur für meine Bedürfnisse gemacht.
 

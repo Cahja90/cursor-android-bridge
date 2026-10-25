@@ -25,6 +25,8 @@ VK_A = 0x41
 VK_ESCAPE = 0x1B
 CF_UNICODETEXT = 13
 GMEM_MOVEABLE = 0x0002
+MOUSEEVENTF_LEFTDOWN = 0x0002
+MOUSEEVENTF_LEFTUP = 0x0004
 
 user32 = ctypes.WinDLL("user32", use_last_error=True)
 kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
@@ -62,6 +64,16 @@ kernel32.GlobalUnlock.argtypes = [wintypes.HGLOBAL]
 kernel32.GlobalUnlock.restype = wintypes.BOOL
 kernel32.GlobalSize.argtypes = [wintypes.HGLOBAL]
 kernel32.GlobalSize.restype = ctypes.c_size_t
+kernel32.GetCurrentThreadId.restype = wintypes.DWORD
+user32.GetWindowThreadProcessId.argtypes = [wintypes.HWND, ctypes.c_void_p]
+user32.GetWindowThreadProcessId.restype = wintypes.DWORD
+user32.AttachThreadInput.argtypes = [wintypes.DWORD, wintypes.DWORD, wintypes.BOOL]
+user32.AttachThreadInput.restype = wintypes.BOOL
+user32.BringWindowToTop.argtypes = [wintypes.HWND]
+user32.BringWindowToTop.restype = wintypes.BOOL
+user32.SetCursorPos.argtypes = [ctypes.c_int, ctypes.c_int]
+user32.SetCursorPos.restype = wintypes.BOOL
+user32.mouse_event.argtypes = [wintypes.DWORD, wintypes.DWORD, wintypes.DWORD, wintypes.DWORD, ctypes.c_size_t]
 
 
 class KEYBDINPUT(ctypes.Structure):
@@ -342,17 +354,36 @@ def finde_feld(uia, root):
     return beste
 
 
-def fokus_fenster(hwnd):
-    handle = wintypes.HWND(hwnd)
-    if user32.IsIconic(handle):
-        user32.ShowWindow(handle, SW_RESTORE)
-    user32.keybd_event(VK_MENU, 0, 0, 0)
-    user32.SetForegroundWindow(handle)
-    user32.keybd_event(VK_MENU, 0, KEYEVENTF_KEYUP, 0)
-    time.sleep(0.2)
+def vordergrund_ist(hwnd):
     vorne = hwnd_wert(user32.GetForegroundWindow())
     wurzel = hwnd_wert(user32.GetAncestor(wintypes.HWND(vorne), GA_ROOT))
-    return vorne == int(hwnd) or wurzel == int(hwnd)
+    ziel = int(hwnd)
+    return vorne == ziel or wurzel == ziel
+
+
+def fokus_fenster(hwnd):
+    handle = wintypes.HWND(int(hwnd))
+    if user32.IsIconic(handle):
+        user32.ShowWindow(handle, SW_RESTORE)
+        time.sleep(0.12)
+    ziel = int(hwnd)
+    for _ in range(3):
+        if vordergrund_ist(ziel):
+            return True
+        fg = user32.GetForegroundWindow()
+        fg_thread = user32.GetWindowThreadProcessId(fg, None)
+        eigener = kernel32.GetCurrentThreadId()
+        verbunden = False
+        if fg_thread and fg_thread != eigener:
+            verbunden = bool(user32.AttachThreadInput(eigener, fg_thread, True))
+        user32.BringWindowToTop(handle)
+        user32.keybd_event(VK_MENU, 0, 0, 0)
+        user32.SetForegroundWindow(handle)
+        user32.keybd_event(VK_MENU, 0, KEYEVENTF_KEYUP, 0)
+        if verbunden:
+            user32.AttachThreadInput(eigener, fg_thread, False)
+        time.sleep(0.1)
+    return vordergrund_ist(ziel)
 
 
 def fokus_feld(edit):
@@ -361,14 +392,54 @@ def fokus_feld(edit):
     return True
 
 
+def element_enthaelt(uia, aussen, innen):
+    if lauf_id(aussen) == lauf_id(innen):
+        return True
+    walker = uia.ControlViewWalker
+    aktuell = innen
+    ziel = lauf_id(aussen)
+    for _ in range(6):
+        aktuell = walker.GetParentElement(aktuell)
+        if not aktuell:
+            return False
+        if lauf_id(aktuell) == ziel:
+            return True
+    return False
+
+
+def feld_hat_fokus(uia, edit):
+    aktiv = uia.GetFocusedElement()
+    if not aktiv:
+        return True
+    return element_enthaelt(uia, edit, aktiv)
+
+
+def klick_feld(edit):
+    left, top, right, bottom = kasten(edit)
+    breite = right - left
+    hoehe = bottom - top
+    if breite < 8 or hoehe < 8:
+        return False
+    x = left + breite // 2
+    y = top + hoehe // 2
+    if not user32.SetCursorPos(x, y):
+        return False
+    time.sleep(0.03)
+    user32.mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+    user32.mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+    time.sleep(0.08)
+    return True
+
+
 def fokus_stimmt(uia, edit, hwnd):
     if not fokus_fenster(hwnd):
         return False
     fokus_feld(edit)
-    aktiv = uia.GetFocusedElement()
-    if not aktiv:
-        return False
-    return lauf_id(aktiv) == lauf_id(edit)
+    if feld_hat_fokus(uia, edit):
+        return True
+    klick_feld(edit)
+    fokus_feld(edit)
+    return feld_hat_fokus(uia, edit)
 
 
 def invoke(element):
@@ -462,40 +533,48 @@ def leere_feld():
     sende_tasten([taste(VK_BACK), taste(VK_BACK, flags=KEYEVENTF_KEYUP)])
 
 
+def clipboard_zurueck(alt):
+    if alt is None:
+        return
+    try:
+        setze_clipboard(alt)
+    except FensterFehler:
+        pass
+
+
 def fuege_text_ein(text):
+    #alte zwischenablage erst zurück, wenn der text im feld steht
     alt = lese_clipboard()
     try:
         setze_clipboard(text)
         fuege_ein()
-        time.sleep(0.2)
-        return True
+        time.sleep(0.35)
+        return True, alt
     except FensterFehler:
-        return False
-    finally:
-        if alt is not None:
-            try:
-                setze_clipboard(alt)
-            except FensterFehler:
-                pass
+        return False, alt
 
 
 def schreibe_ins_feld(edit, text):
     #erst einfügen, tippen nur wenn das feld den text nicht hat
-    if feld_gleich(edit, text) is True:
-        return
-    if lese_feld(edit):
-        leere_feld()
-        time.sleep(0.08)
-    if not fuege_text_ein(text):
-        tippe_text(text)
-        time.sleep(0.12)
-    if feld_gleich(edit, text) is False:
-        leere_feld()
-        time.sleep(0.08)
-        tippe_text(text)
-        time.sleep(0.12)
-    if feld_gleich(edit, text) is False:
-        raise FensterFehler("text nicht im feld")
+    alt = None
+    try:
+        if feld_gleich(edit, text) is True:
+            return
+        if lese_feld(edit):
+            leere_feld()
+            time.sleep(0.08)
+        ok, alt = fuege_text_ein(text)
+        if not ok:
+            time.sleep(0.12)
+        if feld_gleich(edit, text) is False:
+            leere_feld()
+            time.sleep(0.08)
+            tippe_text(text)
+            time.sleep(0.12)
+        if feld_gleich(edit, text) is False:
+            raise FensterFehler("text nicht im feld")
+    finally:
+        clipboard_zurueck(alt)
 
 
 def enter_senden():
@@ -509,7 +588,7 @@ def sende_auftrag(hwnd, text, mode):
         raise FensterFehler("text fehlt")
     if len(text) > 8000:
         raise FensterFehler("text zu lang")
-    if not ORDER_LOCK.acquire(timeout=2):
+    if not ORDER_LOCK.acquire(timeout=8):
         raise FensterFehler("fenster arbeitet noch")
     comtypes.CoInitialize()
     try:
@@ -536,11 +615,14 @@ def sende_auftrag(hwnd, text, mode):
             raise FensterFehler("fokus nicht im feld")
         schreibe_ins_feld(feld, text)
         enter_senden()
-        time.sleep(0.3)
-        #zweites enter nur wenn der text noch im feld steht
+        time.sleep(0.45)
+        #nochmal nur wenn der text noch im feld steht
         if feld_gleich(feld, text) is True:
             kombi(VK_CONTROL, VK_RETURN)
-            time.sleep(0.3)
+            time.sleep(0.45)
+        if feld_gleich(feld, text) is True:
+            enter_senden()
+            time.sleep(0.35)
         if feld_gleich(feld, text) is True:
             raise FensterFehler("nicht abgeschickt")
         print("auftrag im fenster %s modus %s ok=%s" % (handle, mode, modus_ok), flush=True)

@@ -224,7 +224,7 @@ button:disabled { opacity: 0.45; }
         <option value="ask">Fragen</option>
       </select>
     </label>
-    <textarea id="composer" rows="2" placeholder="Nachricht an den Agenten"></textarea>
+    <textarea id="composer" rows="2" enterkeyhint="send" placeholder="Nachricht an den Agenten"></textarea>
     <div class="send_row">
       <button id="stop_button" type="button">Stopp</button>
       <button id="send_button" type="submit">Senden</button>
@@ -296,17 +296,26 @@ function api_headers() {
   return headers;
 }
 
-function send_json(path, body) {
-  return fetch(with_token(path), {
+function send_json(path, body, warte_ms) {
+  const opts = {
     method: "POST",
     headers: api_headers(),
     body: JSON.stringify(body),
-  }).then(function (response) {
+  };
+  let timer = 0;
+  if (warte_ms) {
+    const ctrl = new AbortController();
+    opts.signal = ctrl.signal;
+    timer = setTimeout(function () { ctrl.abort(); }, warte_ms);
+  }
+  return fetch(with_token(path), opts).then(function (response) {
     return response.json().then(function (data) {
       if (!data || typeof data !== "object") data = {ok: false, error: "unerwartete antwort"};
       if (!response.ok) data.ok = false;
       return data;
     });
+  }).finally(function () {
+    if (timer) clearTimeout(timer);
   });
 }
 
@@ -325,13 +334,16 @@ function scroll_down(force) {
   if (force || near_bottom()) transcript_el.scrollTop = transcript_el.scrollHeight;
 }
 
-function set_status_line(text) {
+let status_bis = 0;
+function set_status_line(text, halten_ms) {
+  if (!halten_ms && Date.now() < status_bis) return;
   status_line.textContent = text || "";
+  status_bis = halten_ms ? Date.now() + halten_ms : 0;
 }
 
 function refresh_send_button() {
   const desktop = selected_hwnd === DESKTOP_HWND;
-  send_button.disabled = prompt_busy || !selected_hwnd || desktop;
+  send_button.disabled = prompt_busy;
   if (desktop) composer_el.placeholder = "tippe auf die stelle";
   else if (selected_hwnd) composer_el.placeholder = "Nachricht ins Fenster";
   else composer_el.placeholder = "zuerst ein fenster wählen";
@@ -719,27 +731,55 @@ function send_question(request_id) {
   });
 }
 
+function send_fertig() {
+  prompt_busy = false;
+  shot_pausiert = false;
+  senden_gleich = false;
+  refresh_send_button();
+  refresh_shot();
+}
+
 function send_prompt() {
   const text = composer_el.value.trim();
-  if (!text || prompt_busy || selected_hwnd === DESKTOP_HWND) return;
+  if (!text) {
+    senden_gleich = false;
+    return;
+  }
+  if (prompt_busy) {
+    senden_gleich = false;
+    set_status_line("sendet noch", 2000);
+    return;
+  }
+  if (!selected_hwnd) {
+    senden_gleich = false;
+    set_status_line("zuerst ein fenster wählen", 3000);
+    return;
+  }
+  if (selected_hwnd === DESKTOP_HWND) {
+    senden_gleich = false;
+    set_status_line("auf dem desktop tippen", 3000);
+    return;
+  }
   const draft = text;
   prompt_busy = true;
+  shot_pausiert = true;
   composer_el.value = "";
   refresh_send_button();
-  send_json("/api/prompt", {text: text, mode: mode_select.value}).then(function (res) {
-    prompt_busy = false;
-    refresh_send_button();
+  send_json("/api/prompt", {text: text, mode: mode_select.value}, 25000).then(function (res) {
+    send_fertig();
     if (!res.ok) {
       if (!composer_el.value) composer_el.value = draft;
-      set_status_line(res.error || "senden fehlgeschlagen");
+      const fehler = res.error || "senden fehlgeschlagen";
+      set_status_line(fehler, 5000);
+      shot_note.textContent = fehler;
       return;
     }
     set_status_line(header_text());
   }).catch(function () {
-    prompt_busy = false;
-    refresh_send_button();
+    send_fertig();
     if (!composer_el.value) composer_el.value = draft;
-    set_status_line("keine verbindung");
+    set_status_line("keine verbindung", 5000);
+    shot_note.textContent = "keine verbindung";
   });
 }
 
@@ -1012,23 +1052,66 @@ function connect_events() {
   };
 }
 
+let senden_gleich = false;
+let enter_wartet = false;
+
+function tastatur_setzen() {
+  const app = document.querySelector(".app");
+  if (!app || !window.visualViewport) return;
+  app.style.height = Math.round(window.visualViewport.height) + "px";
+}
+
+document.getElementById("composer_form").addEventListener("pointerdown", function (event) {
+  if (event.target && event.target.id === "send_button") senden_gleich = true;
+}, true);
 document.getElementById("composer_form").addEventListener("submit", function (event) {
   event.preventDefault();
+  if (prompt_busy) return;
+  send_prompt();
+});
+send_button.addEventListener("pointerdown", function (event) {
+  event.preventDefault();
+  senden_gleich = true;
   send_prompt();
 });
 composer_el.addEventListener("keydown", function (event) {
-  if (event.key === "Enter" && !event.shiftKey) {
-    event.preventDefault();
-    send_prompt();
+  if (event.shiftKey) return;
+  const enter = event.key === "Enter" || event.keyCode === 13;
+  if (!enter) return;
+  if (event.isComposing || event.keyCode === 229) {
+    enter_wartet = true;
+    return;
   }
+  event.preventDefault();
+  send_prompt();
+});
+composer_el.addEventListener("beforeinput", function (event) {
+  if (event.inputType !== "insertLineBreak" && event.inputType !== "insertParagraph") return;
+  if (event.isComposing || enter_wartet) return;
+  event.preventDefault();
+  send_prompt();
+});
+composer_el.addEventListener("compositionend", function () {
+  if (!enter_wartet) return;
+  enter_wartet = false;
+  send_prompt();
 });
 composer_el.addEventListener("focus", function () {
   shot_pausiert = true;
+  tastatur_setzen();
 });
 composer_el.addEventListener("blur", function () {
+  if (senden_gleich || prompt_busy) {
+    shot_pausiert = true;
+    return;
+  }
   shot_pausiert = false;
   refresh_shot();
 });
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", tastatur_setzen);
+  window.visualViewport.addEventListener("scroll", tastatur_setzen);
+}
 document.getElementById("stop_button").addEventListener("click", cancel_prompt);
 document.getElementById("reload_windows").addEventListener("click", load_windows);
 document.getElementById("refresh_shot").addEventListener("click", refresh_shot);

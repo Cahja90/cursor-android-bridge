@@ -2162,7 +2162,7 @@ def print_urls(port, token, https_port=0):
     ips = ipv4_list()
     tail = tailscale_ips(ips)
     lan = [ip for ip in ips if not is_tailscale(ip)]
-    print("handy cursor", flush=True)
+    print("cursor android bridge", flush=True)
     print("workspace: " + STATE.workspace, flush=True)
     print("token datei: " + str(TOKEN_PATH), flush=True)
     print("token art: url ?token=  oder header X-Desk-Token  oder cookie desk_token", flush=True)
@@ -2191,7 +2191,7 @@ def main():
         sys.stderr.reconfigure(encoding="utf-8")
     except Exception:
         pass
-    parser = argparse.ArgumentParser(description="handy cursor brücke")
+    parser = argparse.ArgumentParser(description="cursor android bridge")
     parser.add_argument("--workspace", default=os.environ.get("DESK_WORKSPACE", str(ROOT)))
     parser.add_argument("--port", type=int, default=int(os.environ.get("DESK_PORT", str(DEFAULT_PORT))))
     parser.add_argument("--host", default=os.environ.get("DESK_HOST", "0.0.0.0"))
