@@ -1,0 +1,14 @@
+.desk_token
+.tunnel_token
+.tunnel_pid
+chats.json
+chats.json.tmp
+.certs/
+__pycache__/
+*.pyc
+launcher/.gradle/
+launcher/build/
+launcher/app/build/
+launcher/local.properties
+launcher/app/src/main/res/values/desk_url.xml
+launcher/app/src/main/res/raw/

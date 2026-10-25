@@ -1,0 +1,1063 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cursor">
+<meta name="handy-cursor" content="1">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon_192.png">
+<title>Cursor</title>
+<style>
+:root {
+  --bg: #0b0b0c;
+  --panel: #141416;
+  --line: #2a2a30;
+  --text: #f3f3f4;
+  --muted: #9b9ba3;
+  --user: #243044;
+  --card: #17171a;
+  --yes: #f4f4f5;
+  --yes-text: #111113;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+body { -webkit-tap-highlight-color: transparent; }
+.app {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
+  border-bottom: 1px solid var(--line);
+}
+header strong { font-size: 16px; font-weight: 600; letter-spacing: 0.01em; }
+#status_line, #link_state, #thought_line, #shot_note {
+  color: var(--muted);
+  font-size: 12px;
+}
+#status_line {
+  max-width: 70vw;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#thought_line {
+  padding: 6px 14px;
+  border-bottom: 1px solid var(--line);
+  min-height: 0;
+}
+#thought_line:empty { display: none; }
+#shot_panel {
+  border-bottom: 1px solid var(--line);
+  background: #000;
+}
+.shot_bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  background: var(--bg);
+}
+select, textarea, button { font: inherit; color: var(--text); }
+select {
+  flex: 1;
+  min-width: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+#shot_view {
+  height: 28vh;
+  overflow: hidden;
+  background: #000;
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+#shot_view.fit #shot_img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+#shot_view.zoomed #shot_img {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+#shot_img {
+  display: none;
+  background: #000;
+}
+#shot_img[src] {
+  display: block;
+}
+.shot_bar { flex-wrap: wrap; }
+#shot_note { flex: 1; min-width: 0; }
+#transcript {
+  flex: 1;
+  overflow: auto;
+  padding: 14px 14px 8px;
+}
+.bubble {
+  margin: 0 0 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.bubble.user {
+  margin-left: 18%;
+  background: var(--user);
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+.bubble.agent { margin-right: 8%; }
+.tool {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+  margin: 0 0 12px;
+}
+.card_kicker { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+.card_title { font-weight: 600; margin-bottom: 8px; }
+.card_detail {
+  margin: 0 0 10px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  color: #d7d7dc;
+}
+.card_row, .send_row { display: flex; gap: 8px; }
+.q_block { margin: 0 0 10px; }
+.q_option { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 14px; }
+.decision { color: var(--muted); font-size: 13px; }
+.composer {
+  border-top: 1px solid var(--line);
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  background: var(--bg);
+}
+.mode_label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.mode_label select { flex: 0 1 160px; }
+textarea {
+  width: 100%;
+  resize: none;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 14px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+button {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 14px;
+}
+button.btn_yes, #send_button {
+  background: var(--yes);
+  color: var(--yes-text);
+  border-color: var(--yes);
+}
+button:disabled { opacity: 0.45; }
+.send_row { justify-content: flex-end; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <strong>Cursor</strong>
+      <div id="status_line">agent startet</div>
+    </div>
+    <div id="link_state">…</div>
+  </header>
+  <div id="thought_line"></div>
+  <section id="shot_panel">
+    <div class="shot_bar">
+      <select id="window_select" aria-label="Fenster"></select>
+      <button id="reload_windows" type="button">Fenster laden</button>
+    </div>
+    <div id="shot_view" class="fit">
+      <img id="shot_img" alt="fensterbild">
+    </div>
+    <div class="shot_bar">
+      <span id="shot_note">kein fenster gewählt</span>
+      <button id="refresh_shot" type="button">Aktualisieren</button>
+    </div>
+  </section>
+  <main id="transcript"></main>
+  <form class="composer" id="composer_form">
+    <label class="mode_label">Modus
+      <select id="mode_select" aria-label="Modus">
+        <option value="agent">Agent</option>
+        <option value="plan">Plan</option>
+        <option value="ask">Fragen</option>
+      </select>
+    </label>
+    <textarea id="composer" rows="2" placeholder="Nachricht an den Agenten"></textarea>
+    <div class="send_row">
+      <button id="stop_button" type="button">Stopp</button>
+      <button id="send_button" type="submit">Senden</button>
+    </div>
+  </form>
+</div>
+<script>
+const TOKEN = new URLSearchParams(location.search).get("token") || "";
+const SHOT_TAKT_MS = 250;
+const ZOOM_MIN = 1;
+const ZOOM_MAX = 3;
+const DESKTOP_HWND = "-1";
+const TAP_PX = 14;
+let zoom_now = ZOOM_MIN;
+let pinch_start = 0;
+let pinch_zoom = ZOOM_MIN;
+let pan_x = 0;
+let pan_y = 0;
+let pan_on = false;
+let tap_on = false;
+let tap_x = 0;
+let tap_y = 0;
+let tap_moved = false;
+let touch_klick = false;
+let blick_x = 0;
+let blick_y = 0;
+let blick_w = 1;
+let blick_h = 1;
+let voll_ratio = 16 / 9;
+let shot_offen = false;
+let shot_nochmal = false;
+let shot_start = 0;
+let shot_pausiert = false;
+let shot_url = "";
+const transcript_el = document.getElementById("transcript");
+const composer_el = document.getElementById("composer");
+const mode_select = document.getElementById("mode_select");
+const send_button = document.getElementById("send_button");
+const window_select = document.getElementById("window_select");
+const shot_img = document.getElementById("shot_img");
+const shot_note = document.getElementById("shot_note");
+const status_line = document.getElementById("status_line");
+const thought_line = document.getElementById("thought_line");
+const link_state = document.getElementById("link_state");
+let selected_hwnd = "";
+let agent_open = false;
+let current_agent = null;
+let event_source = null;
+let shot_timer = 0;
+let prompt_busy = false;
+let acp_state = null;
+
+function el(tag, class_name, text) {
+  const node = document.createElement(tag);
+  if (class_name) node.className = class_name;
+  if (text != null) node.textContent = text;
+  return node;
+}
+
+function with_token(path) {
+  if (!TOKEN) return path;
+  const join = path.indexOf("?") >= 0 ? "&" : "?";
+  return path + join + "token=" + encodeURIComponent(TOKEN);
+}
+
+function api_headers() {
+  const headers = {"Content-Type": "application/json"};
+  if (TOKEN) headers["X-Desk-Token"] = TOKEN;
+  return headers;
+}
+
+function send_json(path, body) {
+  return fetch(with_token(path), {
+    method: "POST",
+    headers: api_headers(),
+    body: JSON.stringify(body),
+  }).then(function (response) {
+    return response.json().then(function (data) {
+      if (!data || typeof data !== "object") data = {ok: false, error: "unerwartete antwort"};
+      if (!response.ok) data.ok = false;
+      return data;
+    });
+  });
+}
+
+function get_json(path) {
+  return fetch(with_token(path), {headers: api_headers()}).then(function (response) {
+    return response.json();
+  });
+}
+
+function near_bottom() {
+  const gap = transcript_el.scrollHeight - transcript_el.scrollTop - transcript_el.clientHeight;
+  return gap < 90;
+}
+
+function scroll_down(force) {
+  if (force || near_bottom()) transcript_el.scrollTop = transcript_el.scrollHeight;
+}
+
+function set_status_line(text) {
+  status_line.textContent = text || "";
+}
+
+function refresh_send_button() {
+  const desktop = selected_hwnd === DESKTOP_HWND;
+  send_button.disabled = prompt_busy || !selected_hwnd || desktop;
+  if (desktop) composer_el.placeholder = "tippe auf die stelle";
+  else if (selected_hwnd) composer_el.placeholder = "Nachricht ins Fenster";
+  else composer_el.placeholder = "zuerst ein fenster wählen";
+}
+
+function header_text() {
+  if (selected_hwnd) return shot_note.textContent || "fenster gewählt";
+  return "fenster wählen";
+}
+
+function apply_acp(acp) {
+  acp_state = acp || {};
+  set_status_line(header_text());
+  refresh_send_button();
+}
+
+function decision_label(decision) {
+  if (decision === "allow-once") return "erlaubt";
+  if (decision === "reject-once") return "abgelehnt";
+  if (decision === "accept" || decision === "accepted") return "angenommen";
+  if (decision === "reject" || decision === "rejected") return "abgelehnt";
+  if (decision === "answered") return "beantwortet";
+  if (decision === "cancelled" || decision === "canceled") return "zeit abgelaufen";
+  return decision || "erledigt";
+}
+
+function find_card(request_id) {
+  const cards = document.querySelectorAll("[data-request]");
+  const wanted = String(request_id);
+  for (let index = 0; index < cards.length; index += 1) {
+    if (cards[index].getAttribute("data-request") === wanted) return cards[index];
+  }
+  return null;
+}
+
+function mark_card(request_id, decision) {
+  const card = find_card(request_id);
+  if (!card) return;
+  card.querySelectorAll("button, input").forEach(function (node) {
+    node.disabled = true;
+  });
+  let note = card.querySelector(".decision");
+  if (!note) {
+    note = el("div", "decision", decision_label(decision));
+    card.appendChild(note);
+  } else {
+    note.textContent = decision_label(decision);
+  }
+}
+
+function append_user(text, mode) {
+  const node = el("div", "bubble user", text);
+  if (mode) node.setAttribute("data-mode", mode);
+  transcript_el.appendChild(node);
+}
+
+function append_agent(text) {
+  const node = el("div", "bubble agent", text || "");
+  transcript_el.appendChild(node);
+  return node;
+}
+
+function append_status(text) {
+  transcript_el.appendChild(el("div", "tool", text));
+}
+
+function append_chunk(text) {
+  const stick = near_bottom();
+  if (!agent_open || !current_agent) {
+    current_agent = append_agent("");
+    agent_open = true;
+  }
+  current_agent.textContent += text;
+  if (stick) scroll_down(true);
+}
+
+function card_buttons(request_id, yes_label, yes_value, no_label, no_value, sender) {
+  const row = el("div", "card_row");
+  const yes = el("button", "btn btn_yes", yes_label);
+  const no = el("button", "btn btn_no", no_label);
+  yes.type = "button";
+  no.type = "button";
+  yes.addEventListener("click", function () { sender(request_id, yes_value); });
+  no.addEventListener("click", function () { sender(request_id, no_value); });
+  row.appendChild(yes);
+  row.appendChild(no);
+  return row;
+}
+
+function append_permission(item) {
+  const card = el("div", "card");
+  card.setAttribute("data-request", item.request_id);
+  card.appendChild(el("div", "card_kicker", "der agent möchte etwas ausführen"));
+  card.appendChild(el("div", "card_title", item.title || "aktion"));
+  if (item.detail) card.appendChild(el("pre", "card_detail", item.detail));
+  if (!item.decision) {
+    card.appendChild(card_buttons(item.request_id, "erlauben", "allow-once", "ablehnen", "reject-once", send_permission));
+  } else {
+    card.appendChild(el("div", "decision", decision_label(item.decision)));
+  }
+  transcript_el.appendChild(card);
+}
+
+function append_question(item) {
+  const card = el("div", "card");
+  card.setAttribute("data-request", item.request_id);
+  card.appendChild(el("div", "card_kicker", "der agent fragt"));
+  if (item.title) card.appendChild(el("div", "card_title", item.title));
+  (item.questions || []).forEach(function (question) {
+    const block = el("div", "q_block");
+    block.setAttribute("data-question", question.id);
+    block.appendChild(el("div", "", question.prompt || ""));
+    const input_type = question.allow_multiple ? "checkbox" : "radio";
+    (question.options || []).forEach(function (option) {
+      const label = el("label", "q_option");
+      const input = document.createElement("input");
+      input.type = input_type;
+      input.name = "q_" + item.request_id + "_" + question.id;
+      input.value = option.id;
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(option.label || option.id));
+      block.appendChild(label);
+    });
+    card.appendChild(block);
+  });
+  if (!item.decision) {
+    const row = el("div", "card_row");
+    const send = el("button", "btn btn_yes", "Antworten");
+    send.type = "button";
+    send.addEventListener("click", function () { send_question(item.request_id); });
+    row.appendChild(send);
+    card.appendChild(row);
+  } else {
+    card.appendChild(el("div", "decision", decision_label(item.decision)));
+  }
+  transcript_el.appendChild(card);
+}
+
+function append_plan(item) {
+  const card = el("div", "card");
+  card.setAttribute("data-request", item.request_id);
+  card.appendChild(el("div", "card_kicker", "plan vom agenten"));
+  card.appendChild(el("div", "card_title", item.title || "plan"));
+  if (item.overview) card.appendChild(el("div", "", item.overview));
+  if (item.plan) card.appendChild(el("pre", "card_detail", item.plan));
+  if (!item.decision) {
+    card.appendChild(card_buttons(item.request_id, "Annehmen", "accept", "ablehnen", "reject", send_plan));
+  } else {
+    card.appendChild(el("div", "decision", decision_label(item.decision)));
+  }
+  transcript_el.appendChild(card);
+}
+
+function render_transcript(items) {
+  transcript_el.textContent = "";
+  agent_open = false;
+  current_agent = null;
+  (items || []).forEach(function (item) {
+    if (item.role === "user") {
+      agent_open = false;
+      current_agent = null;
+      append_user(item.text, item.mode);
+    } else if (item.role === "agent") {
+      current_agent = append_agent(item.text);
+      agent_open = !item.closed;
+      if (!agent_open) current_agent = null;
+    } else if (item.role === "status") {
+      agent_open = false;
+      current_agent = null;
+      append_status(item.text);
+    } else if (item.role === "permission") {
+      agent_open = false;
+      current_agent = null;
+      append_permission(item);
+    } else if (item.role === "question") {
+      agent_open = false;
+      current_agent = null;
+      append_question(item);
+    } else if (item.role === "plan") {
+      agent_open = false;
+      current_agent = null;
+      append_plan(item);
+    }
+  });
+  scroll_down(true);
+}
+
+function option_label(item) {
+  const title = item.title || "fenster";
+  if (item.process) return title + " — " + item.process;
+  return title;
+}
+
+function load_windows() {
+  return get_json("/api/windows").then(function (data) {
+    const previous = selected_hwnd || window_select.value;
+    window_select.textContent = "";
+    const empty = el("option", "", "fenster wählen");
+    empty.value = "";
+    window_select.appendChild(empty);
+    (data.windows || []).forEach(function (item) {
+      const option = el("option", "", option_label(item));
+      option.value = item.hwnd;
+      window_select.appendChild(option);
+    });
+    if (previous) window_select.value = previous;
+    return data;
+  }).catch(function () {
+    set_status_line("fensterliste fehlgeschlagen");
+  });
+}
+
+function sicht_groesse() {
+  const view = document.getElementById("shot_view");
+  const vw = Math.max(1, view.clientWidth);
+  const vh = Math.max(1, view.clientHeight);
+  const w = 1 / zoom_now;
+  const h = w * (vh / vw) * voll_ratio;
+  return {
+    w: Math.min(1, Math.max(0.05, w)),
+    h: Math.min(1, Math.max(0.05, h)),
+  };
+}
+
+function clamp_blick() {
+  if (zoom_now <= ZOOM_MIN) {
+    blick_x = 0;
+    blick_y = 0;
+    blick_w = 1;
+    blick_h = 1;
+    return;
+  }
+  const size = sicht_groesse();
+  blick_w = size.w;
+  blick_h = size.h;
+  if (blick_x < 0) blick_x = 0;
+  if (blick_y < 0) blick_y = 0;
+  if (blick_x + blick_w > 1) blick_x = Math.max(0, 1 - blick_w);
+  if (blick_y + blick_h > 1) blick_y = Math.max(0, 1 - blick_h);
+}
+
+function refresh_shot_bald() {
+  refresh_shot();
+}
+
+function shot_planen(warte_ms) {
+  if (shot_timer) clearTimeout(shot_timer);
+  shot_timer = setTimeout(function () {
+    shot_timer = 0;
+    refresh_shot();
+  }, warte_ms);
+}
+
+function shot_fertig(ok) {
+  shot_offen = false;
+  if (!selected_hwnd || document.hidden) return;
+  if (ok && shot_nochmal) {
+    shot_nochmal = false;
+    refresh_shot();
+    return;
+  }
+  shot_nochmal = false;
+  const rest = (ok ? SHOT_TAKT_MS : 800) - (Date.now() - shot_start);
+  shot_planen(Math.max(0, rest));
+}
+
+function refresh_shot() {
+  if (!selected_hwnd || document.hidden || shot_pausiert) return;
+  if (shot_timer) {
+    clearTimeout(shot_timer);
+    shot_timer = 0;
+  }
+  if (shot_offen) {
+    shot_nochmal = true;
+    return;
+  }
+  shot_offen = true;
+  shot_nochmal = false;
+  shot_start = Date.now();
+  const parts = [];
+  if (TOKEN) parts.push("token=" + encodeURIComponent(TOKEN));
+  parts.push("t=" + Date.now());
+  if (zoom_now > ZOOM_MIN) {
+    clamp_blick();
+    parts.push("x=" + blick_x.toFixed(4));
+    parts.push("y=" + blick_y.toFixed(4));
+    parts.push("w=" + blick_w.toFixed(4));
+    parts.push("h=" + blick_h.toFixed(4));
+  }
+  fetch("/api/shot?" + parts.join("&"), {cache: "no-store"}).then(function (res) {
+    if (!res.ok) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        const fehler = (data && data.error) || "bild fehlgeschlagen";
+        shot_note.textContent = fehler;
+        if (fehler === "fenster ist weg") {
+          selected_hwnd = "";
+          window_select.value = "";
+          refresh_send_button();
+          set_status_line("fenster ist weg");
+          shot_offen = false;
+          return;
+        }
+        shot_fertig(false);
+      });
+    }
+    return res.blob().then(function (blob) {
+      const neu = URL.createObjectURL(blob);
+      if (shot_url) URL.revokeObjectURL(shot_url);
+      shot_url = neu;
+      shot_img.src = neu;
+    });
+  }).catch(function () {
+    shot_note.textContent = "bild fehlgeschlagen";
+    shot_fertig(false);
+  });
+}
+
+function on_window_change() {
+  const hwnd = window_select.value;
+  if (!hwnd) return;
+  send_json("/api/window", {hwnd: hwnd}).then(function (res) {
+    if (!res.ok) {
+      shot_note.textContent = res.error || "fenster nicht gewählt";
+      return;
+    }
+    selected_hwnd = hwnd;
+    shot_note.textContent = hwnd === DESKTOP_HWND ? "tippe auf die stelle" : ((res.window && res.window.title) || "fenster");
+    render_transcript(res.transcript || []);
+    thought_line.textContent = res.thought || "";
+    set_status_line(header_text());
+    refresh_send_button();
+    refresh_shot();
+  }).catch(function () {
+    shot_note.textContent = "keine verbindung";
+  });
+}
+
+function send_permission(request_id, decision) {
+  const card = find_card(request_id);
+  if (card) card.querySelectorAll("button").forEach(function (node) { node.disabled = true; });
+  send_json("/api/permission", {request_id: request_id, decision: decision}).then(function (res) {
+    if (!res.ok) {
+      if (card) card.querySelectorAll("button").forEach(function (node) { node.disabled = false; });
+      set_status_line(res.error || "freigabe fehlgeschlagen");
+      return;
+    }
+    mark_card(request_id, decision);
+  }).catch(function () {
+    set_status_line("keine verbindung");
+  });
+}
+
+function send_plan(request_id, decision) {
+  send_json("/api/plan", {request_id: request_id, decision: decision}).then(function (res) {
+    if (!res.ok) {
+      set_status_line(res.error || "plan fehlgeschlagen");
+      return;
+    }
+    mark_card(request_id, decision);
+  }).catch(function () {
+    set_status_line("keine verbindung");
+  });
+}
+
+function send_question(request_id) {
+  const card = find_card(request_id);
+  if (!card) return;
+  const answers = [];
+  card.querySelectorAll("[data-question]").forEach(function (block) {
+    const question_id = block.getAttribute("data-question");
+    const selected_option_ids = [];
+    block.querySelectorAll("input:checked").forEach(function (input) {
+      selected_option_ids.push(input.value);
+    });
+    answers.push({question_id: question_id, selected_option_ids: selected_option_ids});
+  });
+  send_json("/api/question", {request_id: request_id, answers: answers}).then(function (res) {
+    if (!res.ok) {
+      set_status_line(res.error || "antwort fehlgeschlagen");
+      return;
+    }
+    mark_card(request_id, "answered");
+  }).catch(function () {
+    set_status_line("keine verbindung");
+  });
+}
+
+function send_prompt() {
+  const text = composer_el.value.trim();
+  if (!text || prompt_busy || selected_hwnd === DESKTOP_HWND) return;
+  const draft = text;
+  prompt_busy = true;
+  composer_el.value = "";
+  refresh_send_button();
+  send_json("/api/prompt", {text: text, mode: mode_select.value}).then(function (res) {
+    prompt_busy = false;
+    refresh_send_button();
+    if (!res.ok) {
+      if (!composer_el.value) composer_el.value = draft;
+      set_status_line(res.error || "senden fehlgeschlagen");
+      return;
+    }
+    set_status_line(header_text());
+  }).catch(function () {
+    prompt_busy = false;
+    refresh_send_button();
+    if (!composer_el.value) composer_el.value = draft;
+    set_status_line("keine verbindung");
+  });
+}
+
+function cancel_prompt() {
+  send_json("/api/cancel", {}).catch(function () {
+    set_status_line("stopp fehlgeschlagen");
+  });
+}
+
+function event_here(event) {
+  if (!selected_hwnd) return false;
+  if (event.hwnd == null || event.hwnd === "") return false;
+  return String(event.hwnd) === String(selected_hwnd);
+}
+
+function apply_zoom(reset_pan) {
+  const view = document.getElementById("shot_view");
+  if (zoom_now <= ZOOM_MIN) {
+    zoom_now = ZOOM_MIN;
+    blick_x = 0;
+    blick_y = 0;
+    blick_w = 1;
+    blick_h = 1;
+    view.className = "fit";
+    view.style.removeProperty("--zoom");
+    view.scrollLeft = 0;
+    view.scrollTop = 0;
+    return;
+  }
+  if (reset_pan) {
+    blick_x = 0;
+    blick_y = 0;
+  }
+  clamp_blick();
+  view.className = "zoomed";
+  view.scrollLeft = 0;
+  view.scrollTop = 0;
+}
+
+function finger_dist(a, b) {
+  const dx = a.clientX - b.clientX;
+  const dy = a.clientY - b.clientY;
+  return Math.hypot(dx, dy);
+}
+
+function zoom_an_punkt(next, ax, ay) {
+  const view = document.getElementById("shot_view");
+  const rect = view.getBoundingClientRect();
+  const px = ax / Math.max(1, rect.width);
+  const py = ay / Math.max(1, rect.height);
+  const nx = blick_x + px * blick_w;
+  const ny = blick_y + py * blick_h;
+  zoom_now = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, next));
+  apply_zoom(false);
+  if (zoom_now > ZOOM_MIN) {
+    blick_x = nx - px * blick_w;
+    blick_y = ny - py * blick_h;
+    clamp_blick();
+  }
+  refresh_shot_bald();
+}
+
+function ist_desktop() {
+  return selected_hwnd === DESKTOP_HWND;
+}
+
+function punkt_norm(client_x, client_y) {
+  const rect = shot_img.getBoundingClientRect();
+  if (rect.width < 2 || rect.height < 2) return null;
+  let nx = (client_x - rect.left) / rect.width;
+  let ny = (client_y - rect.top) / rect.height;
+  if (nx < 0 || ny < 0 || nx > 1 || ny > 1) return null;
+  if (zoom_now > ZOOM_MIN) {
+    nx = blick_x + nx * blick_w;
+    ny = blick_y + ny * blick_h;
+  }
+  return {x: nx, y: ny};
+}
+
+function sende_klick(client_x, client_y) {
+  if (!ist_desktop()) return;
+  const punkt = punkt_norm(client_x, client_y);
+  if (!punkt) return;
+  send_json("/api/click", punkt).then(function (res) {
+    if (!res.ok) {
+      shot_note.textContent = res.error || "klick fehlgeschlagen";
+      return;
+    }
+    shot_note.textContent = "klick " + res.x + " " + res.y;
+  }).catch(function () {
+    shot_note.textContent = "keine verbindung";
+  });
+}
+
+function bind_finger() {
+  //nur das fensterbild, nicht der chat
+  const view = document.getElementById("shot_view");
+  view.addEventListener("touchstart", function (event) {
+    if (event.touches.length >= 2) {
+      pinch_start = finger_dist(event.touches[0], event.touches[1]);
+      pinch_zoom = zoom_now;
+      pan_on = false;
+      tap_moved = true;
+      return;
+    }
+    if (event.touches.length === 1) {
+      tap_on = true;
+      tap_moved = false;
+      tap_x = event.touches[0].clientX;
+      tap_y = event.touches[0].clientY;
+      if (zoom_now > ZOOM_MIN) {
+        pan_on = true;
+        pan_x = tap_x;
+        pan_y = tap_y;
+      }
+    }
+  }, {passive: true});
+  view.addEventListener("touchmove", function (event) {
+    if (event.touches.length >= 2 && pinch_start > 0) {
+      event.preventDefault();
+      tap_moved = true;
+      const dist = finger_dist(event.touches[0], event.touches[1]);
+      const rect = view.getBoundingClientRect();
+      const ax = (event.touches[0].clientX + event.touches[1].clientX) / 2 - rect.left;
+      const ay = (event.touches[0].clientY + event.touches[1].clientY) / 2 - rect.top;
+      zoom_an_punkt(pinch_zoom * (dist / pinch_start), ax, ay);
+      return;
+    }
+    if (event.touches.length === 1 && tap_on) {
+      const finger = event.touches[0];
+      if (Math.hypot(finger.clientX - tap_x, finger.clientY - tap_y) > TAP_PX) tap_moved = true;
+    }
+    if (event.touches.length === 1 && pan_on && zoom_now > ZOOM_MIN && tap_moved) {
+      event.preventDefault();
+      const finger = event.touches[0];
+      const flaeche = view.getBoundingClientRect();
+      blick_x -= ((finger.clientX - pan_x) / Math.max(1, flaeche.width)) * blick_w;
+      blick_y -= ((finger.clientY - pan_y) / Math.max(1, flaeche.height)) * blick_h;
+      pan_x = finger.clientX;
+      pan_y = finger.clientY;
+      clamp_blick();
+      refresh_shot_bald();
+    }
+  }, {passive: false});
+  view.addEventListener("touchend", function (event) {
+    if (event.touches.length < 2) pinch_start = 0;
+    if (event.touches.length === 1 && zoom_now > ZOOM_MIN) {
+      pan_on = true;
+      pan_x = event.touches[0].clientX;
+      pan_y = event.touches[0].clientY;
+      return;
+    }
+    if (event.touches.length === 0) {
+      if (tap_on && !tap_moved && event.changedTouches && event.changedTouches[0]) {
+        touch_klick = true;
+        sende_klick(event.changedTouches[0].clientX, event.changedTouches[0].clientY);
+      }
+      tap_on = false;
+      pan_on = false;
+    }
+  }, {passive: true});
+  view.addEventListener("touchcancel", function () {
+    pinch_start = 0;
+    pan_on = false;
+    tap_on = false;
+  }, {passive: true});
+  view.addEventListener("click", function (event) {
+    if (touch_klick) {
+      touch_klick = false;
+      return;
+    }
+    sende_klick(event.clientX, event.clientY);
+  });
+}
+
+function on_event(event) {
+  if (!event || !event.type) return;
+  if (event.type === "hello") {
+    render_transcript(event.transcript || []);
+    apply_acp(event.acp || {});
+    thought_line.textContent = event.thought || "";
+    if (event.selected_hwnd) {
+      selected_hwnd = String(event.selected_hwnd);
+      window_select.value = selected_hwnd;
+      shot_note.textContent = event.selected_title || "fenster";
+      set_status_line(header_text());
+      refresh_send_button();
+      refresh_shot();
+    }
+    return;
+  }
+  if (event.type === "chat") {
+    if (!event_here(event)) return;
+    render_transcript(event.transcript || []);
+    thought_line.textContent = event.thought || "";
+    if (event.title) shot_note.textContent = event.title;
+    return;
+  }
+  if (!event_here(event) && event.type !== "acp" && event.type !== "prompt_done") return;
+  if (event.type === "user") {
+    agent_open = false;
+    current_agent = null;
+    const stick = near_bottom();
+    append_user(event.text, event.mode);
+    if (stick) scroll_down(true);
+    return;
+  }
+  if (event.type === "chunk") {
+    append_chunk(event.text || "");
+    return;
+  }
+  if (event.type === "status") {
+    agent_open = false;
+    current_agent = null;
+    const stick = near_bottom();
+    append_status(event.text || "");
+    if (stick) scroll_down(true);
+    return;
+  }
+  if (event.type === "permission") {
+    agent_open = false;
+    current_agent = null;
+    append_permission(event);
+    scroll_down(true);
+    return;
+  }
+  if (event.type === "question") {
+    agent_open = false;
+    current_agent = null;
+    append_question(event);
+    scroll_down(true);
+    return;
+  }
+  if (event.type === "plan") {
+    agent_open = false;
+    current_agent = null;
+    append_plan(event);
+    scroll_down(true);
+    return;
+  }
+  if (event.type === "card_done") {
+    mark_card(event.request_id, event.decision);
+    return;
+  }
+  if (event.type === "thought") {
+    thought_line.textContent = event.text || "";
+    return;
+  }
+  if (event.type === "acp") {
+    apply_acp(event.acp || {});
+    return;
+  }
+  if (event.type === "prompt_done") {
+    prompt_busy = false;
+    refresh_send_button();
+  }
+}
+
+function connect_events() {
+  if (event_source) event_source.close();
+  event_source = new EventSource(with_token("/api/events"));
+  event_source.onopen = function () { link_state.textContent = "verbunden"; };
+  event_source.onerror = function () { link_state.textContent = "getrennt"; };
+  event_source.onmessage = function (message) {
+    try {
+      on_event(JSON.parse(message.data));
+    } catch (err) {
+      return;
+    }
+  };
+}
+
+document.getElementById("composer_form").addEventListener("submit", function (event) {
+  event.preventDefault();
+  send_prompt();
+});
+composer_el.addEventListener("keydown", function (event) {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    send_prompt();
+  }
+});
+composer_el.addEventListener("focus", function () {
+  shot_pausiert = true;
+});
+composer_el.addEventListener("blur", function () {
+  shot_pausiert = false;
+  refresh_shot();
+});
+document.getElementById("stop_button").addEventListener("click", cancel_prompt);
+document.getElementById("reload_windows").addEventListener("click", load_windows);
+document.getElementById("refresh_shot").addEventListener("click", refresh_shot);
+shot_img.addEventListener("load", function () {
+  if (zoom_now <= ZOOM_MIN && shot_img.naturalWidth > 8 && shot_img.naturalHeight > 8) {
+    const ratio = shot_img.naturalWidth / shot_img.naturalHeight;
+    if (Math.abs(ratio - voll_ratio) > 0.02) voll_ratio = ratio;
+  }
+  shot_fertig(true);
+});
+bind_finger();
+window_select.addEventListener("change", on_window_change);
+shot_img.addEventListener("error", function () {
+  if (selected_hwnd) shot_note.textContent = "bild fehlgeschlagen";
+  shot_fertig(false);
+});
+document.addEventListener("visibilitychange", function () {
+  if (!document.hidden) refresh_shot();
+});
+load_windows();
+connect_events();
+refresh_send_button();
+
+//dienst nur in sicherem kontext, sonst still
+function register_worker() {
+  if (!("serviceWorker" in navigator)) return;
+  navigator.serviceWorker.register("/sw.js", {scope: "/"}).catch(function () {});
+}
+register_worker();
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="page_url" translatable="false">https://192.168.1.10:8766/?token=HIER_TOKEN</string>
+    <string name="page_url_http" translatable="false">http://192.168.1.10:8765/?token=HIER_TOKEN</string>
+    <string name="page_url_away" translatable="false"></string>
+</resources>
