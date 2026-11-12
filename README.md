@@ -53,9 +53,20 @@ Der Server hört auf `0.0.0.0` Port `8765`, damit das Handy im eigenen Netz rank
 
 ## ansicht
 
-Die Desktop-App Cursor, live vom Fenster geholt. Der Chat rechts ist abgeschnitten. In der Adresszeile steht kein Token.
+### befehl rausgesendet
+Die Nachricht steht im Chat und läuft im gewählten Cursor-Fenster. Unten ist das Feld markiert, Senden schickt den nächsten Befehl los.
 
-![cursor desktop](screenshots/cursor_desktop.jpg)
+![befehl rausgesendet](screenshots/befehl_raus.jpg)
+
+### ranzoomen
+Zwei Finger zoomen das Bild des Fensters. Der Chat darunter bleibt in der gleichen Größe.
+
+![ranzoomen](screenshots/ranzoomen.jpg)
+
+### fensterwahl
+Die Liste zeigt die offenen Fenster. Eines ist gewählt, die anderen bleiben daneben.
+
+![fensterwahl](screenshots/fenster_wahl.jpg)
 
 ## android handy
 
