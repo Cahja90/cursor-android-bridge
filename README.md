@@ -51,6 +51,12 @@ Ohne Token antwortet die Seite mit Hinweis, die API mit einem Fehler.
 
 Der Server hört auf `0.0.0.0` Port `8765`, damit das Handy im eigenen Netz rankommt. Es wird kein Port ins öffentliche Internet freigegeben. Wer das Token nicht hat, kommt nicht an Chat oder Bild.
 
+## ansicht
+
+Die Desktop-App Cursor, live vom Fenster geholt. Der Chat rechts ist abgeschnitten. In der Adresszeile steht kein Token.
+
+![cursor desktop](screenshots/cursor_desktop.jpg)
+
 ## android handy
 
 1. Auf dem Startbildschirm das Symbol **Cursor** antippen. Die Seite öffnet sich ohne Browser-Leiste.
