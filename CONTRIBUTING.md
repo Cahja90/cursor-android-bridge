@@ -1,12 +1,18 @@
-# mitmachen
+# Contributing
 
-der code ist mit. forken ist erlaubt. ändern ist erlaubt. ein review als pull request ist willkommen.
+This project is under the MIT license. Forks are welcome, changes are welcome, and a review as a pull request is welcome.
 
-## so
+## How to contribute
 
-1. repo forken
-2. einen branch anlegen
-3. pull request aufmachen
+1. Fork the repository.
+2. Create a branch.
+3. Open a pull request.
 
-keine keys, keine tokens, keine mails, keine namen in den dateien.
-`.desk_token`, `.certs` und `chats.json` bleiben draußen.
+Leave keys, tokens, email addresses, and names out of files.
+
+Keep these out of the repository:
+
+- `.desk_token`
+- `.tunnel_token`
+- `.certs`
+- `chats.json`
