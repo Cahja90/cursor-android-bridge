@@ -81,3 +81,9 @@ Die Adresse im Heimnetz steht in der Konsole. Dieselbe Seite liegt zusätzlich u
 Die App fragt nicht erneut nach einem Symbol. Das Symbol **Cursor** auf dem Startbildschirm öffnet die Seite.
 
 Für andere läuft die App im WLAN über die LAN-Adresse aus der Konsole. Der Laptop muss an sein und Cursor muss laufen. Eine eigene Adresse für unterwegs bleibt in der privaten Konfiguration.
+
+## lizenz
+
+MIT. forken, ändern und ein review sind erlaubt. der text steht in [LICENSE](LICENSE).
+wie man mitmacht: [CONTRIBUTING.md](CONTRIBUTING.md).
+fremde werke: [NOTICE.md](NOTICE.md).
