@@ -62,7 +62,7 @@ Der Server hört auf `0.0.0.0` Port `8765`, damit das Handy im eigenen Netz rank
 ## ansicht
 
 ### befehl rausgesendet
-Die Nachricht steht im Chat und läuft im gewählten Cursor-Fenster. Unten ist das Feld markiert, Senden schickt den nächsten Befehl los.
+Die Nachricht steht im Chat und läuft im gewählten Cursor-Fenster. Unten im Kasten steht der Text, der Pfeil schickt ihn los.
 
 ![befehl rausgesendet](screenshots/befehl_raus.jpg)
 

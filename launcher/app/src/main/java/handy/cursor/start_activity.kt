@@ -24,9 +24,9 @@ class StartActivity : Activity() {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         val root = FrameLayout(this)
-        root.setBackgroundColor(0xFF0B0B0C.toInt())
+        root.setBackgroundColor(0xFF181818.toInt())
         val web = WebView(this)
-        web.setBackgroundColor(0xFF0B0B0C.toInt())
+        web.setBackgroundColor(0xFF181818.toInt())
         root.addView(
             web,
             FrameLayout.LayoutParams(

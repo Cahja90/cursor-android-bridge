@@ -37,10 +37,10 @@ CERT_PATH = CERT_DIR / "desk_cert.pem"
 KEY_PATH = CERT_DIR / "desk_key.pem"
 DEFAULT_PORT = 8765
 HTTPS_PORT = 8766
-MAX_SHOT_WIDTH = 1280
-JPEG_QUALITY = 70
-ZOOM_SHOT_WIDTH = 1600
-ZOOM_JPEG_QUALITY = 85
+MAX_SHOT_WIDTH = 1920
+JPEG_QUALITY = 85
+ZOOM_SHOT_WIDTH = 2560
+ZOOM_JPEG_QUALITY = 92
 PERMISSION_TIMEOUT_S = 600
 PROMPT_TIMEOUT_S = 600
 HISTORY_LIMIT = 300
@@ -54,7 +54,7 @@ MOUSEEVENTF_LEFTDOWN = 0x0002
 MOUSEEVENTF_LEFTUP = 0x0004
 PW_RENDERFULLCONTENT = 2
 SRCCOPY = 0x00CC0020
-STRETCH_COLORONCOLOR = 3
+STRETCH_HALFTONE = 4
 DWMWA_CLOAKED = 14
 GWL_EXSTYLE = -20
 WS_EX_TOOLWINDOW = 0x00000080
@@ -373,6 +373,8 @@ def setup_win32():
     gdi32.StretchBlt.restype = wintypes.BOOL
     gdi32.SetStretchBltMode.argtypes = [wintypes.HDC, ctypes.c_int]
     gdi32.SetStretchBltMode.restype = ctypes.c_int
+    gdi32.SetBrushOrgEx.argtypes = [wintypes.HDC, ctypes.c_int, ctypes.c_int, ctypes.c_void_p]
+    gdi32.SetBrushOrgEx.restype = wintypes.BOOL
     gdi32.GetDIBits.argtypes = [
         wintypes.HDC, wintypes.HBITMAP, wintypes.UINT, wintypes.UINT,
         ctypes.c_void_p, ctypes.c_void_p, wintypes.UINT,
@@ -681,7 +683,9 @@ def _dc_zu_bild(src_dc, src_x, src_y, src_w, src_h, max_width):
         if not mem_dc or not bitmap:
             return None
         old = gdi32.SelectObject(mem_dc, bitmap)
-        gdi32.SetStretchBltMode(mem_dc, STRETCH_COLORONCOLOR)
+        gdi32.SetStretchBltMode(mem_dc, STRETCH_HALFTONE)
+        #halftone braucht den pinselursprung
+        gdi32.SetBrushOrgEx(mem_dc, 0, 0, None)
         ok = gdi32.StretchBlt(
             mem_dc, 0, 0, dst_w, dst_h,
             src_dc, int(src_x), int(src_y), int(src_w), int(src_h),

@@ -2,9 +2,9 @@
 <resources>
     <style name="DeskTheme" parent="@android:style/Theme.Material.NoActionBar">
         <item name="android:windowFullscreen">true</item>
-        <item name="android:statusBarColor">#0B0B0C</item>
-        <item name="android:navigationBarColor">#0B0B0C</item>
-        <item name="android:windowBackground">#0B0B0C</item>
+        <item name="android:statusBarColor">#181818</item>
+        <item name="android:navigationBarColor">#181818</item>
+        <item name="android:windowBackground">#181818</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>
