@@ -1,10 +1,18 @@
 # cursor android bridge
 
-Android-Handy als Alternative zur iOS-Version von Cursor. Nur für meine Bedürfnisse gemacht.
+Android-Handy als Alternative zur iOS-Version von Cursor. Läuft am eigenen Rechner im eigenen WLAN.
 
 Brücke vom Android-Handy zum Cursor-Agent auf diesem Windows-PC. Im Chrome des Handys liegt eine dunkle Chat-Seite. Dazu wählst du ein Desktop-Fenster, dessen Bild live auf dem Handy erscheint.
 
 Was du auf dem Handy schreibst, wird in das gewählte Fenster auf dem PC getippt und dort gestartet. Das Bild dieses Fensters bleibt auf dem Handy.
+
+## aufbau
+
+`watch_desk.py` startet `desk_server.py`, sobald cursor läuft.
+der server gibt `phone.html` im wlan aus, port 8765, dazu https auf 8766.
+das handy schickt den text, der server tippt ihn ins gewählte fenster.
+das bild des fensters geht zurück ans handy. chats liegen in `chats.json`.
+das token steht in `.desk_token` und bleibt auf dem rechner.
 
 ## voraussetzungen
 

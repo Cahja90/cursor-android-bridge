@@ -12,3 +12,5 @@ launcher/app/build/
 launcher/local.properties
 launcher/app/src/main/res/values/desk_url.xml
 launcher/app/src/main/res/raw/
+.env
+*.pem
