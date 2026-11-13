@@ -90,6 +90,10 @@ select {
 }
 #shot_view {
   height: 28vh;
+}
+#shot_view:has(#shot_img:not([src])) {
+  height: 18vh;
+}
   overflow: hidden;
   background: #000;
   touch-action: none;
@@ -222,6 +226,9 @@ button.btn_yes {
   height: 28px;
   padding: 0;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 #send_button {
   background: var(--yes);
@@ -270,7 +277,7 @@ button:disabled { opacity: 0.4; }
         </label>
         <div class="composer_actions">
           <button id="stop_button" type="button" aria-label="Stopp" hidden>■</button>
-          <button id="send_button" type="submit" aria-label="Senden">↑</button>
+          <button id="send_button" type="submit" aria-label="Senden"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 13V3M8 3L4.5 6.5M8 3l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         </div>
       </div>
     </div>
