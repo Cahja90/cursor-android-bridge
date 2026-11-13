@@ -14,15 +14,15 @@
 <title>Cursor</title>
 <style>
 :root {
-  --bg: #0b0b0c;
-  --panel: #141416;
-  --line: #2a2a30;
-  --text: #f3f3f4;
-  --muted: #9b9ba3;
-  --user: #243044;
-  --card: #17171a;
-  --yes: #f4f4f5;
-  --yes-text: #111113;
+  --bg: #181818;
+  --panel: #1f1f1f;
+  --line: rgba(255, 255, 255, 0.12);
+  --text: #e4e4e4;
+  --muted: #8b8b8b;
+  --user: #2a2a2a;
+  --card: #202020;
+  --yes: #e8e8e8;
+  --yes-text: #141414;
 }
 * { box-sizing: border-box; }
 html, body {
@@ -43,10 +43,11 @@ header {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
+  padding: calc(8px + env(safe-area-inset-top)) 12px 8px;
   border-bottom: 1px solid var(--line);
+  background: var(--bg);
 }
-header strong { font-size: 16px; font-weight: 600; letter-spacing: 0.01em; }
+header strong { font-size: 13px; font-weight: 600; letter-spacing: 0.01em; }
 #status_line, #link_state, #thought_line, #shot_note {
   color: var(--muted);
   font-size: 12px;
@@ -64,24 +65,28 @@ header strong { font-size: 16px; font-weight: 600; letter-spacing: 0.01em; }
 }
 #thought_line:empty { display: none; }
 #shot_panel {
-  border-bottom: 1px solid var(--line);
-  background: #000;
+  margin: 8px 10px 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #111;
+  overflow: hidden;
 }
 .shot_bar {
   display: flex;
   gap: 8px;
   align-items: center;
-  padding: 8px 10px;
+  padding: 6px 8px;
   background: var(--bg);
 }
 select, textarea, button { font: inherit; color: var(--text); }
 select {
   flex: 1;
   min-width: 0;
-  background: var(--panel);
+  background: transparent;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 8px 10px;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 13px;
 }
 #shot_view {
   height: 28vh;
@@ -121,12 +126,13 @@ select {
   word-break: break-word;
 }
 .bubble.user {
-  margin-left: 18%;
+  margin-left: 22%;
   background: var(--user);
-  border-radius: 14px;
-  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
 }
-.bubble.agent { margin-right: 8%; }
+.bubble.agent { margin-right: 0; }
 .tool {
   margin: 0 0 10px;
   color: var(--muted);
@@ -154,42 +160,77 @@ select {
 .q_option { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 14px; }
 .decision { color: var(--muted); font-size: 13px; }
 .composer {
-  border-top: 1px solid var(--line);
-  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  border-top: 1px solid transparent;
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
   background: var(--bg);
+}
+.composer_box {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 4px 6px 6px;
+}
+.composer_bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 2px 0;
 }
 .mode_label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: var(--muted);
-  font-size: 13px;
-  margin-bottom: 8px;
+  margin: 0;
 }
-.mode_label select { flex: 0 1 160px; }
+.mode_label select {
+  flex: 0 1 auto;
+  max-width: 140px;
+  background: transparent;
+  border-color: transparent;
+  padding: 4px 8px;
+}
 textarea {
   width: 100%;
   resize: none;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 12px 14px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 8px 8px 2px;
   font-size: 16px;
   line-height: 1.4;
 }
+textarea:focus, select:focus, button:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.35);
+  outline-offset: 1px;
+}
+textarea:focus { outline: none; }
 button {
-  background: var(--panel);
+  background: transparent;
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 8px 14px;
+  padding: 6px 12px;
+  font-size: 13px;
 }
-button.btn_yes, #send_button {
+button.btn_yes {
   background: var(--yes);
   color: var(--yes-text);
   border-color: var(--yes);
 }
-button:disabled { opacity: 0.45; }
-.send_row { justify-content: flex-end; margin-top: 8px; }
+.composer_actions { display: flex; gap: 6px; align-items: center; }
+#stop_button, #send_button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  line-height: 1;
+}
+#send_button {
+  background: var(--yes);
+  color: var(--yes-text);
+  border-color: var(--yes);
+  font-size: 16px;
+}
+#stop_button { font-size: 12px; }
+button:disabled { opacity: 0.4; }
 </style>
 </head>
 <body>
@@ -217,17 +258,21 @@ button:disabled { opacity: 0.45; }
   </section>
   <main id="transcript"></main>
   <form class="composer" id="composer_form">
-    <label class="mode_label">Modus
-      <select id="mode_select" aria-label="Modus">
-        <option value="agent">Agent</option>
-        <option value="plan">Plan</option>
-        <option value="ask">Fragen</option>
-      </select>
-    </label>
-    <textarea id="composer" rows="2" enterkeyhint="send" placeholder="Nachricht an den Agenten"></textarea>
-    <div class="send_row">
-      <button id="stop_button" type="button">Stopp</button>
-      <button id="send_button" type="submit">Senden</button>
+    <div class="composer_box">
+      <textarea id="composer" rows="2" enterkeyhint="send" placeholder="nachricht an cursor"></textarea>
+      <div class="composer_bar">
+        <label class="mode_label">
+          <select id="mode_select" aria-label="Modus">
+            <option value="agent">Agent</option>
+            <option value="plan">Plan</option>
+            <option value="ask">Fragen</option>
+          </select>
+        </label>
+        <div class="composer_actions">
+          <button id="stop_button" type="button" aria-label="Stopp" hidden>■</button>
+          <button id="send_button" type="submit" aria-label="Senden">↑</button>
+        </div>
+      </div>
     </div>
   </form>
 </div>
@@ -263,6 +308,7 @@ const transcript_el = document.getElementById("transcript");
 const composer_el = document.getElementById("composer");
 const mode_select = document.getElementById("mode_select");
 const send_button = document.getElementById("send_button");
+const stop_button = document.getElementById("stop_button");
 const window_select = document.getElementById("window_select");
 const shot_img = document.getElementById("shot_img");
 const shot_note = document.getElementById("shot_note");
@@ -344,8 +390,9 @@ function set_status_line(text, halten_ms) {
 function refresh_send_button() {
   const desktop = selected_hwnd === DESKTOP_HWND;
   send_button.disabled = prompt_busy;
+  stop_button.hidden = !prompt_busy;
   if (desktop) composer_el.placeholder = "tippe auf die stelle";
-  else if (selected_hwnd) composer_el.placeholder = "Nachricht ins Fenster";
+  else if (selected_hwnd) composer_el.placeholder = "nachricht an cursor";
   else composer_el.placeholder = "zuerst ein fenster wählen";
 }
 
