@@ -93,5 +93,4 @@ Für andere läuft die App im WLAN über die LAN-Adresse aus der Konsole. Der La
 ## lizenz
 
 MIT. forken, ändern und ein review sind erlaubt. der text steht in [LICENSE](LICENSE).
-wie man mitmacht: [CONTRIBUTING.md](CONTRIBUTING.md).
-fremde werke: [NOTICE.md](NOTICE.md).
+
